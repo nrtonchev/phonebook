@@ -7,6 +7,11 @@ const Persons = ({ persons, onUserDelete }) => {
         }
     }
 
+    if (!persons)
+    {
+        return null;
+    }
+
     return (
         <>
             {persons.map(person =>

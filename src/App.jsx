@@ -3,15 +3,25 @@ import Filter from './components/Filter';
 import PersonForm from './components/PersonForm';
 import Persons from './components/Persons';
 import personService from './services/personService';
+import Notification from './components/Notification';
+import Error from './components/Error';
 
 function App() {
-  const [persons, setPersons] = useState([]);
+  const [persons, setPersons] = useState(null);
   const [filter, setFilter] = useState('');
+  const [notification, setNotification] = useState(null);
+  const [errorMessage, setErrorMessage] = useState(null);
 
   useEffect(() => {
     personService.getAll()
           .then(personsData => {
             setPersons(personsData);
+          })
+          .catch(() => {
+            setErrorMessage(`An error occured when attempting to get persons data`);
+            setTimeout(() => {
+              setErrorMessage(null)
+            }, 3000)
           })
   }, [])
 
@@ -22,6 +32,16 @@ function App() {
     personService.create(data)
       .then(createdPerson => {
         setPersons(persons.concat(createdPerson));
+        setNotification(`Added ${createdPerson.name}`);
+        setTimeout(() => {
+          setNotification(null)
+        }, 3000)
+      })
+      .catch(() => {
+        setErrorMessage(`Could not create user: ${data.name}`);
+        setTimeout(() => {
+          setErrorMessage(null)
+        }, 3000)
       });
   }
 
@@ -29,6 +49,16 @@ function App() {
     personService.update(data)
       .then(updatedPerson => {
         setPersons(persons.map(x => x.id !== updatedPerson.id ? x : updatedPerson));
+        setNotification(`Updated ${updatedPerson.name}`);
+        setTimeout(() => {
+          setNotification(null)
+        }, 3000)
+      })
+      .catch(() => {
+        setErrorMessage(`Could not update user: ${data.name}`);
+        setTimeout(() => {
+          setErrorMessage(null)
+        }, 3000)
       });
   }
 
@@ -37,6 +67,12 @@ function App() {
       .then(deletedPerson => {
         setPersons(persons.filter(x => x.id !== deletedPerson.id))
       })
+      .catch(() => {
+        setErrorMessage(`Could not delete user with id: ${id}`);
+        setTimeout(() => {
+          setErrorMessage(null)
+        }, 3000)
+      });
   }
 
   const handleFilterChange = (event) => {
@@ -46,6 +82,8 @@ function App() {
   return (
     <div>
       <h2>Phonebook</h2>
+      <Notification message={notification}/>
+      <Error message={errorMessage}/>
       <Filter filter={filter} handleFilterChange={handleFilterChange}></Filter>
       <h2>Add a new</h2>
       <PersonForm 
